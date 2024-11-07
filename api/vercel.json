@@ -3,14 +3,14 @@
   "name": "my-multi-folder-project",
   "builds": [
     {
-      "src": "api/index.js",
+      "src": "./index.js",
       "use": "@vercel/node"
     }
   ],
   "routes": [
     {
-      "src": "/api/(.*)",
-      "dest": "api/index.js"
+      "src": "/(.*)",
+      "dest": "./index.js"
     }
   ]
 }
