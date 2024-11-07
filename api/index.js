@@ -10,6 +10,7 @@ import cors from "cors";
 
 dotenv.config();
 
+const app = express();
 const corsOptions = {
   origin: process.env.FRONTEND_URL,
   credentials: true,
@@ -25,7 +26,6 @@ mongoose
     console.log(err);
   });
 
-const app = express();
 app.use(express.json());
 app.use(cookieParser());
 
