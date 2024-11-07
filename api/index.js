@@ -11,11 +11,24 @@ import cors from "cors";
 dotenv.config();
 
 const app = express();
-const corsOptions = {
-  origin: "https://real-state-ptnc.vercel.app",
-};
+// const corsOptions = {
+//   origin: "https://real-state-ptnc.vercel.app",
+// };
 
-app.use(cors(corsOptions));
+// app.use(cors(corsOptions));
+
+app.use((req, res, next) => {
+  res.header('Access-Control-Allow-Origin', 'https://real-state-ptnc.vercel.app'); // Allow requests from Vite
+  res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE');
+  res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+  
+  // If the request method is OPTIONS (pre-flight), respond with 200
+  if (req.method === 'OPTIONS') {
+    return res.status(200).end();
+  }
+
+  next();
+})
 
 mongoose
   .connect(process.env.MONGO)
