@@ -11,11 +11,12 @@ import cors from "cors";
 dotenv.config();
 
 const app = express();
-// const corsOptions = {
-//   origin: process.env.FRONTEND_URL,
-//   credentials: true,
-// };
-// app.use(cors(corsOptions));
+const corsOptions = {
+  origin: process.env.FRONTEND_URL,
+  credentials: true,
+};
+
+app.use(cors(corsOptions));
 
 mongoose
   .connect(process.env.MONGO)
