@@ -12,7 +12,7 @@ dotenv.config();
 
 const app = express();
 const corsOptions = {
-  origin: "https://real-state-ptnc.vercel.app",
+  origin: process.env.ALLOWED_ORIGIN
 };
 
 app.use(cors(corsOptions));
