@@ -5,7 +5,7 @@ export default defineConfig({
   server:{
     proxy:{
       "/api":{
-        target:'real-state-hsfa.vercel.app',
+        target:'https://real-state-hsfa.vercel.app',
         secure: false
       },
     },
