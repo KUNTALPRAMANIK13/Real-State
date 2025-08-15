@@ -1,8 +1,61 @@
-# React + Vite
+# Real-State Client (React + Vite)
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+React SPA for the Real-State marketplace. Uses React Router, Redux Toolkit, redux-persist, Firebase Auth (Google) and Storage, and talks to the API via `VITE_backend_url`.
 
-Currently, two official plugins are available:
+## Quickstart (Windows, cmd)
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react/README.md) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+```
+cd MERN_Project_1\client
+npm install
+npm run dev
+```
+
+- Local client port: 5173
+- Ensure `VITE_backend_url` points to your API (e.g., `http://localhost:3000`).
+
+## Environment Variables (`client/.env`)
+
+- `VITE_backend_url` = API base URL (e.g., `http://localhost:3000`)
+- `VITE_FIREBASE_API_KEY`
+- `VITE_FIREBASE_AUTH_DOMAIN`
+- `VITE_FIREBASE_PROJECT_ID`
+- `VITE_FIREBASE_STORAGE_BUCKET`
+- `VITE_FIREBASE_MESSAGING_SENDER_ID`
+- `VITE_FIREBASE_APP_ID`
+- `VITE_FIREBASE_MEASUREMENT_ID` (optional)
+
+## Firebase setup (Google Sign-In)
+
+1. Create a Firebase project.
+2. Enable Authentication → Sign-in method → Google.
+3. Add your local and deployed domains in Authentication → Settings → Authorized domains.
+4. Copy web app config and fill the `VITE_FIREBASE_*` env vars.
+
+Auth flow:
+
+- Client signs in with Google via Firebase, retrieves an ID token, then calls `POST /api/auth/firebase` to establish a backend session cookie.
+
+## API usage
+
+- `src/services/apiService.js` uses `VITE_backend_url` and `credentials: 'include'` for cookie-based auth.
+- Routes are defined in `src/App.jsx` with protected routes via `components/PrivateRoute`.
+
+## Image uploads
+
+- `components/ImageUpload.jsx` uses Firebase Storage via `src/services/storageService.js`.
+- Supports single/multiple uploads and server-compatible URLs in listing forms.
+
+## Build & Deploy (Vercel)
+
+```
+npm run build
+```
+
+- Config: `client/vercel.json` rewrites non-API paths to `/index.html`.
+- Set `VITE_backend_url` in Vercel Project → Settings → Environment Variables to your deployed API URL.
+- Add deployed domain to Firebase Authorized domains.
+
+## Notes
+
+- `vite.config.js` includes an example proxy; prefer using `VITE_backend_url` for clarity across environments.
+- Cookies are cross-site; your deployed client must be HTTPS and must match `ALLOWED_ORIGIN` in the API.
