@@ -1,12 +1,6 @@
 {
   "version": 2,
   "name": "real-estate-api",
-  "builds": [
-    {
-      "src": "./index.js",
-      "use": "@vercel/node"
-    }
-  ],
   "routes": [
     {
       "src": "/(.*)",
