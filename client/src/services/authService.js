@@ -280,7 +280,8 @@ class AuthService {
         message = "Sign-in was cancelled";
         break;
       case "auth/popup-blocked":
-        message = "Popup was blocked by the browser; retry or we’ll use redirect.";
+        message =
+          "Popup was blocked by the browser; retry or we’ll use redirect.";
         break;
       case "auth/unauthorized-domain":
         message = `This domain is not authorized for Firebase Auth. Add ${window.location.hostname} in Firebase Console → Authentication → Settings → Authorized domains.`;
