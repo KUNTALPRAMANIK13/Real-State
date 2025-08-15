@@ -31,6 +31,8 @@ app.use(cors(corsOptions));
 
 // Handle preflight requests
 app.options("*", cors(corsOptions));
+app.use(express.json());
+app.use(cookieParser());
 
 // Middleware to ensure fresh DB connection for each request
 app.use(async (req, res, next) => {
@@ -67,8 +69,6 @@ app.use((req, res, next) => {
   next();
 });
 
-app.use(express.json());
-app.use(cookieParser());
 
 app.use("/api/user", userRouter);
 app.use("/api/auth", authRouter);
