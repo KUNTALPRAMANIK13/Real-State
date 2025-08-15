@@ -5,7 +5,7 @@ export default defineConfig({
   server:{
     proxy:{
       "/api":{
-        target:'https://real-state-gray.vercel.app',
+        target:'https://real-state-omega-three.vercel.app',
         secure: false
       },
     },
