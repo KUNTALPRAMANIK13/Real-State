@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import storageService from "../services/storageService";
+import cloudinaryService from "../services/cloudinaryService";
 
 const ImageUpload = ({
   multiple = false,
@@ -32,7 +32,7 @@ const ImageUpload = ({
     try {
       if (multiple) {
         // Upload multiple files
-        const results = await storageService.uploadMultipleImages(
+        const results = await cloudinaryService.uploadMultipleImages(
           files,
           folder,
           userId
@@ -41,7 +41,7 @@ const ImageUpload = ({
         onUploadComplete?.(results);
       } else {
         // Upload single file
-        const result = await storageService.uploadImage(
+        const result = await cloudinaryService.uploadImage(
           files[0],
           folder,
           userId
@@ -60,7 +60,9 @@ const ImageUpload = ({
   const removeImage = async (index) => {
     try {
       const imageToRemove = uploadedImages[index];
-      await storageService.deleteImage(imageToRemove.path);
+      await cloudinaryService.deleteImage(
+        imageToRemove.publicId || imageToRemove.path
+      );
 
       const newImages = uploadedImages.filter((_, i) => i !== index);
       setUploadedImages(newImages);

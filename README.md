@@ -5,14 +5,14 @@ Modern real estate marketplace built with the MERN stack. Users can sign up/sign
 ### Highlights
 
 - Auth: Email/password (JWT cookies) + Google OAuth via Firebase; backend session via httpOnly cookie.
-- Listings: Full CRUD with validation; image upload to Firebase Storage.
+- Listings: Full CRUD with validation; image upload to Cloudinary.
 - Search: Filter by type (sale/rent), offer, furnished, parking, price sort, and text search.
 - DX/Deployment: Vercel config for API and client; CORS and cookie settings for cross-site usage.
 
 ### Tech Stack
 
 - Frontend: React 18, Vite, React Router, Redux Toolkit + redux-persist, Tailwind CSS
-- Auth/Storage: Firebase (Auth, Storage)
+- Auth/Storage: Firebase (Auth), Cloudinary (Image Storage)
 - Backend: Node.js, Express, Mongoose/MongoDB, JWT, bcryptjs, cookie-parser, CORS
 - Hosting: Vercel (API and client)
 
@@ -44,6 +44,9 @@ Backend (`api/.env`):
 - `NODE_ENV` = development or production
 - `FIREBASE_PROJECT_ID` = Your Firebase Project ID
 - `FIREBASE_SERVICE_ACCOUNT_KEY` = JSON string of a Firebase service account (recommended for production Firebase token verification)
+- `CLOUDINARY_CLOUD_NAME` = Your Cloudinary cloud name
+- `CLOUDINARY_API_KEY` = Your Cloudinary API key
+- `CLOUDINARY_API_SECRET` = Your Cloudinary API secret
 
 Frontend (`client/.env`):
 
@@ -51,10 +54,12 @@ Frontend (`client/.env`):
 - `VITE_FIREBASE_API_KEY`
 - `VITE_FIREBASE_AUTH_DOMAIN`
 - `VITE_FIREBASE_PROJECT_ID`
-- `VITE_FIREBASE_STORAGE_BUCKET`
 - `VITE_FIREBASE_MESSAGING_SENDER_ID`
 - `VITE_FIREBASE_APP_ID`
 - `VITE_FIREBASE_MEASUREMENT_ID` (optional)
+- `VITE_CLOUDINARY_CLOUD_NAME` = Your Cloudinary cloud name
+- `VITE_CLOUDINARY_UPLOAD_PRESET` = Your Cloudinary unsigned upload preset
+- `VITE_CLOUDINARY_API_KEY` = Your Cloudinary API key (optional, for client-side operations)
 
 ## Run Locally (Windows, cmd)
 

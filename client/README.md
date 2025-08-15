@@ -1,6 +1,6 @@
 # Real-State Client (React + Vite)
 
-React SPA for the Real-State marketplace. Uses React Router, Redux Toolkit, redux-persist, Firebase Auth (Google) and Storage, and talks to the API via `VITE_backend_url`.
+React SPA for the Real-State marketplace. Uses React Router, Redux Toolkit, redux-persist, Firebase Auth (Google) and Cloudinary for image storage, and talks to the API via `VITE_backend_url`.
 
 ## Quickstart (Windows, cmd)
 
@@ -19,10 +19,12 @@ npm run dev
 - `VITE_FIREBASE_API_KEY`
 - `VITE_FIREBASE_AUTH_DOMAIN`
 - `VITE_FIREBASE_PROJECT_ID`
-- `VITE_FIREBASE_STORAGE_BUCKET`
 - `VITE_FIREBASE_MESSAGING_SENDER_ID`
 - `VITE_FIREBASE_APP_ID`
 - `VITE_FIREBASE_MEASUREMENT_ID` (optional)
+- `VITE_CLOUDINARY_CLOUD_NAME` = Your Cloudinary cloud name
+- `VITE_CLOUDINARY_UPLOAD_PRESET` = Your Cloudinary unsigned upload preset
+- `VITE_CLOUDINARY_API_KEY` = Your Cloudinary API key (optional)
 
 ## Firebase setup (Google Sign-In)
 
@@ -42,8 +44,9 @@ Auth flow:
 
 ## Image uploads
 
-- `components/ImageUpload.jsx` uses Firebase Storage via `src/services/storageService.js`.
+- `components/ImageUpload.jsx` uses Cloudinary via `src/services/cloudinaryService.js`.
 - Supports single/multiple uploads and server-compatible URLs in listing forms.
+- Images are uploaded directly to Cloudinary with automatic optimization.
 
 ## Build & Deploy (Vercel)
 

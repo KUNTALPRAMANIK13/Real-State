@@ -14,7 +14,7 @@ import {
 import { useDispatch } from "react-redux";
 import { Link } from "react-router-dom";
 import authService from "../services/authService";
-import storageService from "../services/storageService";
+import cloudinaryService from "../services/cloudinaryService";
 export default function Profile() {
   const fileRef = useRef(null);
   const { currentUser, loading, error } = useSelector((state) => state.user);
@@ -28,11 +28,8 @@ export default function Profile() {
   const [userListings, setUserListings] = useState([]);
   const dispatch = useDispatch();
 
-  // firebase storage
-  // allow read;
-  // allow write: if
-  // request.resource.size < 2 * 1024 * 1024 &&
-  // request.resource.contentType.matches('image/.*')
+  // Image upload using Cloudinary
+  // File size limit handled in cloudinaryService (10MB max)
 
   useEffect(() => {
     if (file) {
@@ -45,8 +42,8 @@ export default function Profile() {
       setFileUploadError(false);
       setFilePerc(0);
 
-      // Upload to Firebase Storage only (no Firestore metadata)
-      const result = await storageService.uploadImage(
+      // Upload to Cloudinary
+      const result = await cloudinaryService.uploadImage(
         file,
         "avatars",
         currentUser?.uid || currentUser?._id
