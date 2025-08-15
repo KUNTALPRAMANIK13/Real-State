@@ -7,7 +7,7 @@ import listingRouter from "./routes/listing.route.js";
 import cookieParser from "cookie-parser";
 // import path from 'path';
 import cors from "cors";
-import { connectDB, disconnectDB } from "./utils/database.js";
+import { connectDB } from "./utils/database.js";
 
 dotenv.config();
 
@@ -31,10 +31,11 @@ app.use(cors(corsOptions));
 
 // Handle preflight requests
 app.options("*", cors(corsOptions));
+
 app.use(express.json());
 app.use(cookieParser());
 
-// Middleware to ensure fresh DB connection for each request
+// Simple middleware to ensure DB connection
 app.use(async (req, res, next) => {
   try {
     await connectDB();
@@ -49,27 +50,6 @@ app.use(async (req, res, next) => {
   }
 });
 
-// Middleware to disconnect DB after each response
-app.use((req, res, next) => {
-  const originalSend = res.send;
-  const originalJson = res.json;
-
-  // Override res.send to disconnect after response
-  res.send = function (...args) {
-    disconnectDB().catch((err) => console.error("Disconnect error:", err));
-    return originalSend.apply(this, args);
-  };
-
-  // Override res.json to disconnect after response
-  res.json = function (...args) {
-    disconnectDB().catch((err) => console.error("Disconnect error:", err));
-    return originalJson.apply(this, args);
-  };
-
-  next();
-});
-
-
 app.use("/api/user", userRouter);
 app.use("/api/auth", authRouter);
 app.use("/api/listing", listingRouter);
@@ -82,11 +62,6 @@ app.use("/api/listing", listingRouter);
 // })
 
 app.use((err, req, res, next) => {
-  // Ensure disconnection even on errors
-  disconnectDB().catch((disconnectErr) =>
-    console.error("Error disconnecting on error:", disconnectErr)
-  );
-
   const statusCode = err.statusCode || 500;
   const message = err.message || "Internal Server Error";
   return res.status(statusCode).json({

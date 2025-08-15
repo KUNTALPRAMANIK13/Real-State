@@ -3,6 +3,15 @@ import bcryptjs from "bcryptjs";
 import { errorHandler } from "../utils/error.js";
 import jwt from "jsonwebtoken";
 
+// Centralized cookie options for cross-site usage (frontend and backend on different domains)
+const cookieOptions = {
+  httpOnly: true,
+  secure: process.env.NODE_ENV === "production",
+  // Required for cross-site cookies in modern browsers
+  sameSite: "none",
+  maxAge: 24 * 60 * 60 * 1000, // 24 hours
+};
+
 export const signup = async (req, res, next) => {
   const { username, email, password } = req.body;
   const hashedPass = bcryptjs.hashSync(password, 10);
@@ -38,15 +47,7 @@ export const signin = async (req, res, next) => {
     );
 
     const { password: pass, ...rest } = validUser._doc;
-    res
-      .cookie("access_token", token, {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === "production",
-        sameSite: "strict",
-        maxAge: 24 * 60 * 60 * 1000, // 24 hours
-      })
-      .status(200)
-      .json(rest);
+    res.cookie("access_token", token, cookieOptions).status(200).json(rest);
   } catch (e) {
     next(e);
   }
@@ -61,15 +62,7 @@ export const google = async (req, res, next) => {
         process.env.JWT_SECRET || "mern"
       );
       const { password: pass, ...rest } = user._doc;
-      res
-        .cookie("access_token", token, {
-          httpOnly: true,
-          secure: process.env.NODE_ENV === "production",
-          sameSite: "strict",
-          maxAge: 24 * 60 * 60 * 1000, // 24 hours
-        })
-        .status(200)
-        .json(rest);
+      res.cookie("access_token", token, cookieOptions).status(200).json(rest);
     } else {
       const generatedPassword =
         Math.random().toString(36).slice(-8) +
@@ -89,15 +82,7 @@ export const google = async (req, res, next) => {
         process.env.JWT_SECRET || "mern"
       );
       const { password: pass, ...rest } = newUser._doc;
-      res
-        .cookie("access_token", token, {
-          httpOnly: true,
-          secure: process.env.NODE_ENV === "production",
-          sameSite: "strict",
-          maxAge: 24 * 60 * 60 * 1000, // 24 hours
-        })
-        .status(200)
-        .json(rest);
+      res.cookie("access_token", token, cookieOptions).status(200).json(rest);
     }
   } catch (error) {
     next(error);
@@ -158,15 +143,7 @@ export const firebaseAuth = async (req, res, next) => {
 
     const { password: pass, ...rest } = user._doc;
 
-    res
-      .cookie("access_token", token, {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === "production",
-        sameSite: "strict",
-        maxAge: 24 * 60 * 60 * 1000, // 24 hours
-      })
-      .status(200)
-      .json(rest);
+    res.cookie("access_token", token, cookieOptions).status(200).json(rest);
   } catch (error) {
     next(error);
   }
@@ -174,7 +151,12 @@ export const firebaseAuth = async (req, res, next) => {
 
 export const signOut = async (req, res, next) => {
   try {
-    res.clearCookie("access_token");
+    // Clear cookie with same attributes used when setting it
+    res.clearCookie("access_token", {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "none",
+    });
 
     res.status(200).json("Signed Out");
   } catch (error) {
