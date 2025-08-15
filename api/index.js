@@ -16,15 +16,21 @@ const corsOptions = {
   origin: [
     "http://localhost:5173",
     "http://localhost:3000",
+    "http://localhost:5174", // Additional Vite port
+    "https://real-state-ptnc.vercel.app",
     process.env.ALLOWED_ORIGIN || "https://real-state-ptnc.vercel.app",
   ],
   credentials: true,
   methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-  allowedHeaders: ["Content-Type", "Authorization"],
+  allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With"],
   optionsSuccessStatus: 200,
+  preflightContinue: false,
 };
 
 app.use(cors(corsOptions));
+
+// Handle preflight requests
+app.options("*", cors(corsOptions));
 
 // Middleware to ensure DB connection for each request
 app.use(async (req, res, next) => {
