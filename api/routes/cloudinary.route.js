@@ -15,8 +15,9 @@ router.delete("/delete", verifyToken, deleteImage);
 // Get user images - requires authentication
 router.get("/user-images/:userId", verifyToken, getUserImages);
 
-// Get image details - requires authentication  
+// Get image details - requires authentication
 router.get("/image/:publicId", verifyToken, getImageDetails);
 
 // Cleanup images - admin only (you might want to add admin verification)
-router.post("/cleanup", verifyToken, cleanupImages);export default router;
+router.post("/cleanup", verifyToken, cleanupImages);
+export default router;
