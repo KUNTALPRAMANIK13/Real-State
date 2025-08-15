@@ -1,22 +1,37 @@
 // Import the functions you need from the SDKs you need
 import { initializeApp } from "firebase/app";
-import { getAnalytics } from "firebase/analytics";
+import {
+  getAnalytics,
+  isSupported as analyticsSupported,
+} from "firebase/analytics";
 import { getAuth } from "firebase/auth";
 import { getStorage } from "firebase/storage";
-// Your web app's Firebase configuration
+
+// Your web app's Firebase configuration (loaded from Vite env vars)
+// Ensure these are defined in your .env file with VITE_ prefix
 const firebaseConfig = {
-  apiKey: "AIzaSyB1YZzip-IuXJwUM53ea9Gc-26MpRb8sEQ",
-  authDomain: "realstate13-fbfaa.firebaseapp.com",
-  projectId: "realstate13-fbfaa",
-  storageBucket: "realstate13-fbfaa.firebasestorage.app",
-  messagingSenderId: "1042614896468",
-  appId: "1:1042614896468:web:016122b93e16be45002ac1",
-  measurementId: "G-D1F7Q11QGX"
+  apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
+  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
+  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
+  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
+  appId: import.meta.env.VITE_FIREBASE_APP_ID,
+  measurementId: import.meta.env.VITE_FIREBASE_MEASUREMENT_ID,
 };
 
 // Initialize Firebase
 export const app = initializeApp(firebaseConfig);
-const analytics = getAnalytics(app);
+
+// Initialize Analytics only when supported (guards SSR/tests)
+(async () => {
+  try {
+    if (await analyticsSupported()) {
+      getAnalytics(app);
+    }
+  } catch (_) {
+    // no-op if analytics isn't available
+  }
+})();
 
 // Initialize Firebase Authentication and get a reference to the service
 export const auth = getAuth(app);
