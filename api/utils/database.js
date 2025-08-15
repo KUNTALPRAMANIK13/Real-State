@@ -1,62 +1,57 @@
 import mongoose from "mongoose";
 
-let isConnected = false;
-
+// For serverless - always connect fresh for each request
 export const connectDB = async () => {
-  if (isConnected) {
-    console.log("Using existing database connection");
-    return;
-  }
-
   try {
+    // Disconnect any existing connections first
+    if (mongoose.connections[0].readyState !== 0) {
+      await mongoose.disconnect();
+      console.log("Disconnected previous MongoDB connection");
+    }
+
     // Set mongoose options for serverless
     mongoose.set("strictQuery", false);
 
     const db = await mongoose.connect(process.env.MONGO, {
       bufferCommands: false,
-      maxPoolSize: 1, // Maintain up to 1 socket connections
-      serverSelectionTimeoutMS: 5000, // Keep trying to send operations for 5 seconds
-      socketTimeoutMS: 45000, // Close sockets after 45 seconds of inactivity
-      family: 4, // Use IPv4, skip trying IPv6
+      maxPoolSize: 1, // Single connection for serverless
+      serverSelectionTimeoutMS: 5000, // Quick timeout for serverless
+      socketTimeoutMS: 10000, // Shorter timeout for serverless
+      connectTimeoutMS: 5000, // Connection timeout
+      family: 4, // Use IPv4
+      maxIdleTimeMS: 1000, // Close connection quickly when idle
     });
 
-    isConnected = db.connections[0].readyState === 1;
-    console.log("MongoDB connected successfully");
-
+    console.log("MongoDB connected fresh for this request");
     return db;
   } catch (error) {
     console.error("MongoDB connection error:", error);
-    isConnected = false;
     throw error;
   }
 };
 
+// Disconnect after each request
 export const disconnectDB = async () => {
-  if (isConnected) {
-    await mongoose.disconnect();
-    isConnected = false;
-    console.log("MongoDB disconnected");
+  try {
+    if (mongoose.connections[0].readyState !== 0) {
+      await mongoose.disconnect();
+      console.log("MongoDB disconnected after request");
+    }
+  } catch (error) {
+    console.error("Error disconnecting MongoDB:", error);
   }
 };
 
-// Handle connection events
-mongoose.connection.on("connected", () => {
-  console.log("Mongoose connected to MongoDB");
-  isConnected = true;
-});
-
-mongoose.connection.on("error", (err) => {
+// Force disconnect on any connection errors
+mongoose.connection.on("error", async (err) => {
   console.error("Mongoose connection error:", err);
-  isConnected = false;
+  try {
+    await mongoose.disconnect();
+  } catch (disconnectError) {
+    console.error("Error during force disconnect:", disconnectError);
+  }
 });
 
 mongoose.connection.on("disconnected", () => {
-  console.log("Mongoose disconnected");
-  isConnected = false;
-});
-
-// Handle process termination
-process.on("SIGINT", async () => {
-  await disconnectDB();
-  process.exit(0);
+  console.log("Mongoose disconnected - ready for new connection");
 });
