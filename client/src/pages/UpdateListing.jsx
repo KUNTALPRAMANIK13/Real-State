@@ -1,13 +1,7 @@
 import { useEffect, useState } from "react";
-import {
-  getDownloadURL,
-  getStorage,
-  ref,
-  uploadBytesResumable,
-} from "firebase/storage";
-import { app } from "../firebase";
 import { useSelector } from "react-redux";
 import { useNavigate, useParams } from "react-router-dom";
+import cloudinaryService from "../services/cloudinaryService";
 
 export default function UpdateListing() {
   const { currentUser } = useSelector((state) => state.user);
@@ -79,28 +73,34 @@ export default function UpdateListing() {
   };
 
   const storeImage = async (file) => {
-    return new Promise((resolve, reject) => {
-      const storage = getStorage(app);
-      const fileName = new Date().getTime() + file.name;
-      const storageRef = ref(storage, fileName);
-      const uploadTask = uploadBytesResumable(storageRef, file);
-      uploadTask.on(
-        "state_changed",
-        (snapshot) => {
-          const progress =
-            (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
-          console.log(`Upload is ${progress}% done`);
-        },
-        (error) => {
-          reject(error);
-        },
-        () => {
-          getDownloadURL(uploadTask.snapshot.ref).then((downloadURL) => {
-            resolve(downloadURL);
-          });
-        }
+    try {
+      // Check if user is authenticated before upload
+      if (!currentUser) {
+        throw new Error("Authentication required for image upload");
+      }
+
+      // Validate file size (10MB limit for Cloudinary)
+      if (file.size > 10 * 1024 * 1024) {
+        throw new Error("File size must be less than 10MB");
+      }
+
+      // Validate file type
+      if (!file.type.startsWith("image/")) {
+        throw new Error("Only image files are allowed");
+      }
+
+      // Upload to Cloudinary
+      const result = await cloudinaryService.uploadImage(
+        file,
+        "listings",
+        currentUser.uid || currentUser._id
       );
-    });
+
+      return result.url;
+    } catch (error) {
+      console.error("Upload error:", error);
+      throw error;
+    }
   };
 
   const handleRemoveImage = (index) => {

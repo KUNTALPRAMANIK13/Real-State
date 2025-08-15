@@ -1,13 +1,7 @@
 import { useState } from "react";
-import {
-  getDownloadURL,
-  getStorage,
-  ref,
-  uploadBytesResumable,
-} from "firebase/storage";
-import { app } from "../firebase";
 import { useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
+import cloudinaryService from "../services/cloudinaryService";
 
 export default function CreateListing() {
   const { currentUser } = useSelector((state) => state.user);
@@ -69,68 +63,34 @@ export default function CreateListing() {
   };
 
   const storeImage = async (file) => {
-    return new Promise((resolve, reject) => {
+    try {
       // Check if user is authenticated before upload
       if (!currentUser) {
-        reject(new Error("Authentication required for image upload"));
-        return;
+        throw new Error("Authentication required for image upload");
       }
 
-      // Validate file size (2MB limit)
-      if (file.size > 2 * 1024 * 1024) {
-        reject(new Error("File size must be less than 2MB"));
-        return;
+      // Validate file size (10MB limit for Cloudinary)
+      if (file.size > 10 * 1024 * 1024) {
+        throw new Error("File size must be less than 10MB");
       }
 
       // Validate file type
       if (!file.type.startsWith("image/")) {
-        reject(new Error("Only image files are allowed"));
-        return;
+        throw new Error("Only image files are allowed");
       }
 
-      const storage = getStorage(app);
-      // Create a more organized path structure
-      const fileName = `listings/${currentUser.uid}/${new Date().getTime()}_${
-        file.name
-      }`;
-      const storageRef = ref(storage, fileName);
-      const uploadTask = uploadBytesResumable(storageRef, file);
-
-      uploadTask.on(
-        "state_changed",
-        (snapshot) => {
-          const progress =
-            (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
-          console.log(`Upload is ${progress}% done`);
-        },
-        (error) => {
-          console.error("Upload error:", error);
-          // Provide more specific error messages
-          if (error.code === "storage/unauthorized") {
-            reject(
-              new Error(
-                "You don't have permission to upload images. Please sign in and try again."
-              )
-            );
-          } else if (error.code === "storage/canceled") {
-            reject(new Error("Upload was canceled"));
-          } else if (error.code === "storage/quota-exceeded") {
-            reject(new Error("Storage quota exceeded"));
-          } else {
-            reject(new Error(`Upload failed: ${error.message}`));
-          }
-        },
-        () => {
-          getDownloadURL(uploadTask.snapshot.ref)
-            .then((downloadURL) => {
-              resolve(downloadURL);
-            })
-            .catch((error) => {
-              reject(new Error(`Failed to get download URL: ${error.message}`));
-            });
-        }
+      // Upload to Cloudinary
+      const result = await cloudinaryService.uploadImage(
+        file,
+        "listings",
+        currentUser.uid || currentUser._id
       );
-    });
+
+      return result.url;
+    } catch (error) {
+      console.error("Upload error:", error);
+      throw error;
+    }
   };
 
   const handleRemoveImage = (index) => {
