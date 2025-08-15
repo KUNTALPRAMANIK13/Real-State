@@ -8,12 +8,12 @@ import {
 } from "../redux/user/userSlice";
 import { useDispatch, useSelector } from "react-redux";
 import OAuth from "../components/OAuth";
+import authService from "../services/authService";
 
 export default function SignIn() {
   const [formData, setFormData] = useState({});
   const { loading, error } = useSelector((state) => state.user);
   const dispatch = useDispatch();
-
   const navigate = useNavigate();
 
   const handleChange = (e) => {
@@ -25,27 +25,33 @@ export default function SignIn() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    if (!formData.email || !formData.password) {
+      dispatch(signInFailure("Please fill in all fields"));
+      return;
+    }
+
     try {
       dispatch(signInStart());
 
-      const res = await fetch(`${import.meta.env.VITE_backend_url}/api/auth/signin`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(formData),
-      });
-      const data = await res.json();
+      // Use traditional signin (backend only)
+      const result = await authService.traditionalSignIn(
+        formData.email,
+        formData.password
+      );
 
-      if (data.success === false) {
-        dispatch(signInFailure(data.message));
-        return;
-      }
+      // Use the backend user data for Redux state
+      const userData = {
+        _id: result.backendUser._id,
+        username: result.backendUser.username,
+        email: result.backendUser.email,
+        avatar: result.backendUser.avatar,
+      };
 
-      dispatch(signInSuccess(data));
+      dispatch(signInSuccess(userData));
       navigate("/");
     } catch (error) {
-      dispatch(signInFailure(data.message));
+      dispatch(signInFailure(error.message));
     }
   };
 
@@ -65,17 +71,19 @@ export default function SignIn() {
       <form onSubmit={handleSubmit} className="flex flex-col gap-4">
         <input
           type="email"
-          placeholder="email"
+          placeholder="Email"
           className="border p-3 rounded-lg"
           id="email"
           onChange={handleChange}
+          required
         />
         <input
           type="password"
-          placeholder="password"
+          placeholder="Password"
           className="border p-3 rounded-lg"
           id="password"
           onChange={handleChange}
+          required
         />
 
         <button
@@ -83,13 +91,12 @@ export default function SignIn() {
           className="bg-slate-700 text-white p-3 rounded-lg uppercase hover:opacity-95 disabled:opacity-80"
         >
           {loading ? "Loading..." : "Sign In"}
-          
         </button>
 
         <OAuth />
       </form>
       <div className="flex gap-2 mt-5">
-        <p>Dont have an account?</p>
+        <p>Don't have an account?</p>
         <Link to={"/sign-up"}>
           <span className="text-blue-700">Sign up</span>
         </Link>
