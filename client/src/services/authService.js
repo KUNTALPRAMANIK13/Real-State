@@ -54,11 +54,29 @@ class AuthService {
       try {
         result = await signInWithPopup(auth, provider);
       } catch (popupError) {
-        // If popup is blocked or fails, you could implement redirect as fallback
-        console.warn(
-          "Popup signin failed, this is usually due to popup blockers or COOP policies:",
-          popupError.message
-        );
+        // If popup is blocked or similar, fallback to redirect
+        const popupIssues = [
+          "auth/popup-blocked",
+          "auth/cancelled-popup-request",
+          "auth/popup-closed-by-user",
+        ];
+
+        if (popupIssues.includes(popupError.code)) {
+          console.warn(
+            "Popup sign-in failed; falling back to redirect:",
+            popupError.message
+          );
+          await signInWithRedirect(auth, provider);
+          return; // Redirect occurs
+        }
+
+        // For unauthorized domain, surface clearer error (redirect won't help)
+        if (popupError.code === "auth/unauthorized-domain") {
+          throw new Error(
+            `This domain is not authorized for Firebase Auth. Add ${window.location.hostname} in Firebase Console → Authentication → Settings → Authorized domains.`
+          );
+        }
+
         throw popupError;
       }
 
@@ -260,6 +278,12 @@ class AuthService {
         break;
       case "auth/cancelled-popup-request":
         message = "Sign-in was cancelled";
+        break;
+      case "auth/popup-blocked":
+        message = "Popup was blocked by the browser; retry or we’ll use redirect.";
+        break;
+      case "auth/unauthorized-domain":
+        message = `This domain is not authorized for Firebase Auth. Add ${window.location.hostname} in Firebase Console → Authentication → Settings → Authorized domains.`;
         break;
       default:
         message = error.message || message;
