@@ -7,6 +7,7 @@ import listingRouter from "./routes/listing.route.js";
 import cookieParser from "cookie-parser";
 // import path from 'path';
 import cors from "cors";
+import { connectDB } from "./utils/database.js";
 
 dotenv.config();
 
@@ -25,14 +26,20 @@ const corsOptions = {
 
 app.use(cors(corsOptions));
 
-mongoose
-  .connect(process.env.MONGO)
-  .then(() => {
-    console.log("Connected to MongoDb");
-  })
-  .catch((err) => {
-    console.log(err);
-  });
+// Middleware to ensure DB connection for each request
+app.use(async (req, res, next) => {
+  try {
+    await connectDB();
+    next();
+  } catch (error) {
+    console.error("Database connection failed:", error);
+    res.status(500).json({
+      success: false,
+      message: "Database connection failed",
+      error: error.message,
+    });
+  }
+});
 
 app.use(express.json());
 app.use(cookieParser());
@@ -58,6 +65,12 @@ app.use((err, req, res, next) => {
   });
 });
 
-app.listen(3000, () => {
-  console.log("Server is running on port 3000");
-});
+// For local development
+if (process.env.NODE_ENV !== "production") {
+  app.listen(3000, () => {
+    console.log("Server is running on port 3000");
+  });
+}
+
+// Export for Vercel
+export default app;
